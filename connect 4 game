@@ -1,0 +1,90 @@
+import tkinter as tk
+
+class ConnectFour:
+    def create_board(self):
+        self.bg_color = '#0f0f0f'
+        self.disc_colors = {'X': 'yellow', 'O': 'skyblue'}
+        self.current_player = 'X'
+        self.rows, self.cols = 6, 7
+        self.board = [[' ' for _ in range(self.cols)] for _ in range(self.rows)]
+        self.board_buttons()
+
+    def board_buttons(self):
+        buttons = []
+        for row in range(self.rows):
+            row_buttons = []
+            for col in range(self.cols):
+                button = tk.Button(self.master, text=' ', width=4, height=2,font=('Berlin Sans FB Demi',10),fg='white',command=lambda r=row, c=col: self.make_move(r, c),bg=self.bg_color)
+                button.grid(row=row, column=col)
+                row_buttons.append(button)
+            buttons.append(row_buttons)
+        self.buttons = buttons
+
+    def make_move(self, row, col):
+        current_player = self.current_player
+        disc_colors = self.disc_colors
+        board = self.board
+        buttons = self.buttons
+
+        if board[row][col] == ' ':
+            board[row][col] = current_player
+            disc_color = disc_colors[current_player]
+            buttons[row][col].config(text=current_player, bg=disc_color, state=tk.DISABLED)
+
+            if self.check_winner(row, col):
+                self.show_winner(current_player)
+                return
+
+            if self.check_draw():
+                self.show_draw()
+                return
+
+            self.current_player = 'O' if current_player == 'X' else 'X'
+
+    def check_winner(self, row, col):
+        current_player = self.current_player
+        board = self.board
+
+        if (self.check_line(row, col, 0, 1) + self.check_line(row, col, 0, -1) >= 3 or
+                self.check_line(row, col, 1, 0) >= 3 or
+                self.check_line(row, col, 1, 1) + self.check_line(row, col, -1, -1) >= 3 or
+                self.check_line(row, col, 1, -1) + self.check_line(row, col, -1, 1) >= 3):
+            return True
+        return False
+
+    def check_line(self, row, col, row_delta, col_delta):
+        current_player = self.current_player
+        board = self.board
+
+        count = 0
+        while 0 <= row < self.rows and 0 <= col < self.cols and board[row][col] == current_player:
+            row += row_delta
+            col += col_delta
+            count += 1
+        return count
+
+    def check_draw(self):
+        board = self.board
+
+        for row in board:
+            for cell in row:
+                if cell == ' ':
+                    return False
+        return True
+
+    def show_winner(self, winner):
+        winner_label = tk.Label(self.master, text=f"Player {winner} wins!",fg='white', bg=self.bg_color, font=('Helvetica', 12, 'bold'))
+        winner_label.grid(row=self.rows, columnspan=self.cols)
+
+    def show_draw(self):
+        draw_label = tk.Label(self.master, text="It's a draw!",fg='white', bg=self.bg_color, font=('Helvetica', 12, 'bold'))
+        draw_label.grid(row=self.rows, columnspan=self.cols)
+
+    def run_game(self):
+        self.master = tk.Tk()
+        self.create_board()
+        self.master.mainloop()
+
+if __name__ == "__main__":
+    game = ConnectFour()
+    game.run_game()
